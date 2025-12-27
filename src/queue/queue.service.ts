@@ -1,73 +1,113 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
-import { Queue, Worker, JobsOptions } from 'bullmq';
-import IORedis, { Redis } from 'ioredis';
-import { MlService } from '../ml/ml.service';
+import { Logger } from '@nestjs/common';
+import { BulkJobOptions, Job, JobsOptions, Queue } from 'bullmq';
 
-@Injectable()
-export class QueueService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(QueueService.name);
-  private connection: Redis;
-  public queue: Queue;
-  private worker: Worker;
-  private scheduler: any;
+export abstract class AbstractQueueService {
+    protected readonly abstract logger: Logger;
 
-  constructor(private readonly mlService: MlService) {
-    const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
-    this.connection = new IORedis(redisUrl);
-    this.queue = new Queue('ml-jobs', { connection: this.connection });
-    // QueueScheduler may not be available in all bullmq versions; require at runtime
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { QueueScheduler } = require('bullmq');
-      this.scheduler = new QueueScheduler('ml-jobs', { connection: this.connection });
-    } catch (e) {
-      this.scheduler = null;
-    }
+    abstract get queue(): Queue;
 
-    // In-process worker: processes jobs and delegates ML inference to MlService.
-    this.worker = new Worker(
-      'ml-jobs',
-      async (job) => {
-        this.logger.log(`processing job ${job.id} ${job.name}`);
-        try {
-          if (job.name === 'ml-infer') {
-            const { userId, payload } = job.data;
-            await this.mlService.infer(userId, payload || {});
-          }
-          return { ok: true };
-        } catch (e) {
-          this.logger.error(`job ${job.id} failed`, e as any);
-          throw e;
+    constructor() {}
+
+    /**
+     * Checks the connection to the queue server.
+     *
+     * @returns A promise that resolves if the connection is successful or throws an error if not.
+     * @throws If the connection fails, an error is thrown.
+     */
+    protected async checkConnection(): Promise<void> {
+        const client = await this.queue.client;
+
+        if (client.status !== 'ready') {
+            const errorMessage = `Queue "${this.queue.name}" is not connected. Current status: [${client.status.toUpperCase()}]`;
+            this.logger.error(errorMessage);
+            throw new Error(errorMessage);
         }
-      },
-      { connection: this.connection }
-    );
 
-    this.worker.on('completed', (job) => this.logger.log(`completed ${job.id}`));
-    this.worker.on('failed', (job, err) => this.logger.error(`failed ${job?.id}`, err as any));
-  }
+        this.logger.log(`Queue "${this.queue.name}" is connected.`);
+    }
 
-  async onModuleInit() {
-    await this.queue.waitUntilReady();
-    this.logger.log('Queue ready');
-  }
+    /**
+     * Adds event listeners to the queue.
+     */
+    protected async initEventListeners() {
+        this.queue.on('error', (error: Error) => {
+            this.logger.fatal(`Queue error: [${error.message}].`);
+        });
+    }
 
-  async addJob(name: string, data: any, opts?: JobsOptions) {
-    return this.queue.add(name, data, opts);
-  }
+    /**
+     * Drains all jobs from the queue.
+     *
+     * @param delayed - Whether to include delayed jobs in the drain operation. Defaults to `false`.
+     * @returns A promise that resolves when the queue is fully drained.
+     */
+    protected async drain(delayed?: boolean): Promise<void> {
+        return this.queue.drain(delayed);
+    }
 
-  async onModuleDestroy() {
-    if (this.worker) {
-      try { await this.worker.close(); } catch (e) { console.warn('worker close error', e); }
+    /**
+     * Removes all jobs from the queue, effectively obliterating its contents.
+     *
+     * @param options - Options for the obliteration process, including a `force` flag.
+     * @returns A promise that resolves when the obliteration is complete.
+     */
+    protected async obliterate(options?: { force: boolean }): Promise<void> {
+        return this.queue.obliterate(options);
     }
-    if (this.scheduler) {
-      try { await this.scheduler.close(); } catch (e) { console.warn('scheduler close error', e); }
+
+    /**
+     * Closes the queue instance associated with this queue adapter.
+     *
+     * @returns A promise that resolves once the queue is closed.
+     */
+    protected async closeQueue(): Promise<void> {
+        return this.queue.close();
     }
-    if (this.queue) {
-      try { await this.queue.close(); } catch (e) { console.warn('queue close error', e); }
+
+    /**
+     * Pauses the queue, preventing it from processing new jobs.
+     * Jobs that are already being processed will continue until completion.
+     *
+     * @returns A promise that resolves when the queue is paused.
+     */
+    protected async pauseQueue(): Promise<void> {
+        return this.queue.pause();
     }
-    if (this.connection) {
-      try { await this.connection.quit(); } catch (e) { console.warn('connection quit error', e); }
+
+    /**
+     * Resumes a paused queue, allowing it to process jobs again.
+     *
+     * @returns A promise that resolves when the queue is resumed.
+     */
+    protected async resumeQueue(): Promise<void> {
+        return this.queue.resume();
     }
-  }
+
+    /**
+     * Adds a single job to the queue for processing.
+     *
+     * @param name - The name of the job, used to identify the job type.
+     * @param data - The data payload to pass to the job processor.
+     * @param options - Optional configuration for the job, such as delay or priority.
+     * @returns A promise that resolves to the created job instance.
+     */
+    protected async addJob<Data, Result>(
+        name: string,
+        data: Data,
+        options?: JobsOptions,
+    ): Promise<Job<Data, Result>> {
+        return this.queue.add(name, data, options);
+    }
+
+    /**
+     * Adds multiple jobs to the queue in bulk.
+     *
+     * @param jobs - An array of job definitions, each containing `name`, `data`, and optional `options`.
+     * @returns A promise that resolves to an array of created job instances.
+     */
+    protected async addBulk<Data, Result>(
+        jobs: Array<{ name: string; data: Data; options?: BulkJobOptions }>,
+    ): Promise<Array<Job<Data, Result, string>>> {
+        return this.queue.addBulk(jobs);
+    }
 }

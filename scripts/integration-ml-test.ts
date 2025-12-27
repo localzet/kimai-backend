@@ -1,5 +1,5 @@
 import { PrismaService } from '../src/prisma/prisma.service';
-import { MlService } from '../src/ml/ml.service';
+import { MlService } from '../src/api/ml/ml.service';
 
 async function run() {
   const prisma = new PrismaService();

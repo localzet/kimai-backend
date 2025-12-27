@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { QueueService } from '../queue/queue.service';
+import { SyncService } from '../queue/sync/sync.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class CronService {
   private readonly logger = new Logger(CronService.name);
-  constructor(private readonly queueService: QueueService, private readonly prisma: PrismaService) {}
+  constructor(private readonly queueService: SyncService, private readonly prisma: PrismaService) {}
 
   // Daily job: enqueue sync for 1-week-ago period (runs at 00:05)
   @Cron('0 5 0 * * *')
@@ -19,7 +19,7 @@ export class CronService {
     for (const s of users) {
       const userId = s.userId;
       await this.prisma.syncState.upsert({ where: { userId }, update: { syncStatus: 'syncing' }, create: { userId, syncStatus: 'syncing' } });
-      await this.queueService.addJob('regular-sync', { userId, since, until });
+      await this.queueService.startRegularSync({ userId, since, until });
     }
   }
 
@@ -34,7 +34,7 @@ export class CronService {
     for (const s of users) {
       const userId = s.userId;
       await this.prisma.syncState.upsert({ where: { userId }, update: { syncStatus: 'syncing' }, create: { userId, syncStatus: 'syncing' } });
-      await this.queueService.addJob('regular-sync', { userId, since, until });
+      await this.queueService.startRegularSync({ userId, since, until });
     }
   }
 }

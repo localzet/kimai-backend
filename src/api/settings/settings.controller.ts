@@ -1,8 +1,9 @@
 import { Body, Controller, Get, Put, UseGuards, UnauthorizedException, Req } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import axios from 'axios';
-import { QueueService } from '../queue/queue.service';
-import { JwtAuthGuard } from '../auth/jwt.guard';
+import { SyncService } from '../../queue/sync/sync.service';
+import { JwtAuthGuard } from '../../auth/jwt.guard';
+import { KimaiService } from '../../kimai/kimai.service';
 
 class UpdateSettingsDto {
   kimai_api_url?: string;
@@ -13,12 +14,12 @@ class UpdateSettingsDto {
   calendar_sync?: any;
 }
 
-@Controller('api')
+@Controller('settings')
 export class SettingsController {
-  constructor(private prisma: PrismaService, private queue: QueueService) {}
+  constructor(private prisma: PrismaService, private sync: SyncService, private kimai: KimaiService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get('settings')
+  @Get()
   async getSettings(@Req() req: any) {
     const userId = req.user?.userId;
     if (!userId) throw new UnauthorizedException();
@@ -38,7 +39,7 @@ export class SettingsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put('settings')
+  @Put()
   async updateSettings(@Req() req: any, @Body() body: UpdateSettingsDto) {
     const userId = req.user?.userId;
     if (!userId) throw new UnauthorizedException();
@@ -88,14 +89,12 @@ export class SettingsController {
 
     // enqueue initial sync
     await this.prisma.syncState.upsert({ where: { userId }, update: { syncStatus: 'syncing' }, create: { userId, syncStatus: 'syncing' } });
-    await this.queue.addJob('initial-sync', { userId });
+    await this.sync.startInitialSync({ userId });
 
     // fetch projects from Kimai to return to frontend for configuration
     let projects: any[] = [];
     try {
-      const KimaiClient = (await import('../kimai/kimai.service')).KimaiClient;
-      const client = new KimaiClient({ apiUrl: settings.kimaiApiUrl, apiKey: settings.kimaiApiKey });
-      projects = await client.getProjects();
+      projects = await this.kimai.getProjects({ apiUrl: settings.kimaiApiUrl, apiKey: settings.kimaiApiKey });
     } catch (e) {
       // ignore project fetch errors, frontend will fetch directly if needed
       projects = [];

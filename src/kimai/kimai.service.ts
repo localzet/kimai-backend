@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import axiosRetry from 'axios-retry';
+import { Injectable, Logger } from '@nestjs/common';
 
 export interface KimaiConfig {
   apiUrl: string;
@@ -86,4 +87,33 @@ export class KimaiClient {
   }
 }
 
-export default KimaiClient;
+@Injectable()
+export class KimaiService {
+  private readonly logger = new Logger(KimaiService.name);
+
+  constructor() {}
+
+  getClient(cfg: KimaiConfig) {
+    return new KimaiClient(cfg);
+  }
+
+  async getProjects(cfg: KimaiConfig): Promise<any[]> {
+    try {
+      const client = this.getClient(cfg);
+      return await client.getProjects();
+    } catch (e) {
+      this.logger.warn('Failed to fetch projects from Kimai: ' + e);
+      return [];
+    }
+  }
+
+  async getTimesheets(cfg: KimaiConfig, sinceIso: string, untilIso: string): Promise<any[]> {
+    const client = this.getClient(cfg);
+    return client.getTimesheets(sinceIso, untilIso);
+  }
+
+  async validateCredentials(cfg: KimaiConfig): Promise<boolean> {
+    const client = this.getClient(cfg);
+    return client.validateCredentials();
+  }
+}

@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Post, Put, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
 import { MlService } from './ml.service';
-import { JwtAuthGuard } from '../auth/jwt.guard';
+import { JwtAuthGuard } from '../../auth/jwt.guard';
 
-@Controller('api/ml')
+@Controller('ml')
 export class MlController {
   constructor(private readonly ml: MlService) {}
 

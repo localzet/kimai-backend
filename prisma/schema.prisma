@@ -8,63 +8,66 @@ generator client {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  mixId        String   @unique @map("mix_id")
-  email        String?  @unique
-  passwordHash String?  @map("password_hash")
-  tokenVersion Int      @default(0) @map("token_version")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id           String  @id @default(uuid())
+  email        String  @unique
+  password String
+  tokenVersion Int     @default(0)
 
-  settings     UserSettings?
-  timesheets   Timesheet[]
-  syncState    SyncState?
-  sessions     Session[]
-  mlResults    MlResult[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  settings   UserSettings?
+  timesheets Timesheet[]
+  syncState  SyncState?
+  sessions   Session[]
+  mlResults  MlResult[]
 }
 
 model UserSettings {
   id              String   @id @default(uuid())
-  userId          String   @unique @map("user_id")
-  kimaiApiUrl     String   @map("kimai_api_url")
-  kimaiApiKey     String   @map("kimai_api_key")
-  ratePerMinute   Float    @default(0) @map("rate_per_minute")
-  projectSettings Json     @map("project_settings")
-  excludedTags    String[] @default([]) @map("excluded_tags")
-  calendarSync    Json?    @map("calendar_sync")
-  userPreferences Json?    @map("user_preferences")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  userId          String   @unique
+  kimaiApiUrl     String
+  kimaiApiKey     String
+  ratePerMinute   Float    @default(0)
+  projectSettings Json
+  excludedTags    String[] @default([])
+  calendarSync    Json?
+  userPreferences Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 }
 
 model SyncState {
-  id        String   @id @default(uuid())
-  userId    String   @unique @map("user_id")
-  syncStatus String  @map("sync_status")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id         String @id @default(uuid())
+  userId     String @unique
+  syncStatus String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 }
 
 model Timesheet {
-  id           String   @id @default(uuid())
-  userId       String   @map("user_id")
-  kimaiId      Int?     @map("kimai_id")
+  id           String    @id @default(uuid())
+  userId       String
+  kimaiId      Int?
   begin        DateTime
   end          DateTime?
   duration     Int?
   projectId    Int?
-  projectName  String?  @map("project_name")
-  activityId   Int?     @map("activity_id")
-  activityName String?  @map("activity_name")
+  projectName  String?
+  activityId   Int?
+  activityName String?
   description  String?
-  tags         String[] @default([])
-  metaFields   Json?    @map("meta_fields")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  tags         String[]  @default([])
+  metaFields   Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 
@@ -73,14 +76,15 @@ model Timesheet {
 
 model Session {
   id           String   @id @default(uuid())
-  userId       String   @map("user_id")
-  refreshToken String   @map("refresh_token") @unique
-  expiresAt    DateTime @map("expires_at")
-  lastUsedAt   DateTime @map("last_used_at")
-  ipAddress    String?  @map("ip_address")
-  userAgent    String?  @map("user_agent")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  userId       String
+  refreshToken String   @unique
+  expiresAt    DateTime
+  lastUsedAt   DateTime
+  ipAddress    String?
+  userAgent    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 }
@@ -89,17 +93,19 @@ model MlConfig {
   id        String   @id @default(uuid())
   key       String   @unique
   value     Json
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model MlResult {
-  id         String   @id @default(uuid())
-  userId     String?  @map("user_id")
-  timesheetId String? @map("timesheet_id")
-  kind       String   // e.g., "forecasting", "anomaly", "recommendation"
-  payload    Json
-  createdAt  DateTime @default(now()) @map("created_at")
+  id          String  @id @default(uuid())
+  userId      String?
+  timesheetId String?
+  kind        String // e.g., "forecasting", "anomaly", "recommendation"
+  payload     Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User? @relation(fields: [userId], references: [id])
 }

@@ -1,11 +1,11 @@
 import { Controller, Post, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { QueueService } from '../queue/queue.service';
-import { JwtAuthGuard } from '../auth/jwt.guard';
+import { PrismaService } from '../../prisma/prisma.service';
+import { SyncService } from '../../queue/sync/sync.service';
+import { JwtAuthGuard } from '../../auth/jwt.guard';
 
-@Controller('api/sync')
+@Controller('sync')
 export class SyncController {
-  constructor(private prisma: PrismaService, private queue: QueueService) {}
+  constructor(private prisma: PrismaService, private sync: SyncService) {}
 
   @UseGuards(JwtAuthGuard)
   @Post('trigger')
@@ -14,7 +14,7 @@ export class SyncController {
     if (!userId) throw new UnauthorizedException();
 
     await this.prisma.syncState.upsert({ where: { userId }, update: { syncStatus: 'syncing' }, create: { userId, syncStatus: 'syncing' } });
-    await this.queue.addJob('initial-sync', { userId });
+    await this.sync.startInitialSync({ userId });
     return { status: 'triggered', message: 'Sync started' };
   }
 

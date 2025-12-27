@@ -1,13 +1,13 @@
 import { Controller, Get, Post, UseGuards, Req, Query, Param, Body, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { JwtAuthGuard } from '../auth/jwt.guard';
+import { PrismaService } from '../../prisma/prisma.service';
+import { JwtAuthGuard } from '../../auth/jwt.guard';
 
-@Controller('api')
+@Controller('timesheets')
 export class TimesheetsController {
   constructor(private prisma: PrismaService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get('timesheets')
+  @Get()
   async list(@Req() req: any, @Query() query: any) {
     const userId = req.user?.userId;
     if (!userId) throw new UnauthorizedException();
@@ -23,7 +23,7 @@ export class TimesheetsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('timesheets/:id')
+  @Get(':id')
   async get(@Req() req: any, @Param('id') id: string) {
     const userId = req.user?.userId;
     if (!userId) throw new UnauthorizedException();
@@ -32,7 +32,7 @@ export class TimesheetsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('timesheets')
+  @Post()
   async create(@Req() req: any, @Body() body: any) {
     const userId = req.user?.userId;
     if (!userId) throw new UnauthorizedException();
