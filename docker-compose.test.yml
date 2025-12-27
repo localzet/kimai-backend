@@ -1,0 +1,56 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: kimai
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: kimai
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kimai" ]
+      interval: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+
+  kimai-ml:
+    build: ../kimai-ml
+    platform: linux/amd64
+    ports:
+      - "50051:50051"
+    depends_on:
+      - postgres
+
+  migrator:
+    build: .
+    platform: linux/amd64
+    restart: 'no'
+    environment:
+      DATABASE_URL: postgres://kimai:pass@postgres:5432/kimai
+    depends_on:
+      - postgres
+    command: sh -c "until pg_isready -h postgres -p 5432 -U kimai; do sleep 1; done; npx prisma migrate deploy || true"
+
+  backend:
+    build: .
+    platform: linux/amd64
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgres://kimai:pass@postgres:5432/kimai
+      REDIS_URL: redis://redis:6379
+      PORT: 3001
+      ML_GRPC_HOST: kimai-ml:50051
+    depends_on:
+      - postgres
+      - redis
+      - kimai-ml

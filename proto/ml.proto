@@ -1,0 +1,47 @@
+syntax = "proto3";
+package kimai.ml.v1;
+
+option go_package = "kimai_ml/v1";
+
+message TimesheetEntry {
+  string id = 1;
+  string begin = 2;
+  string end = 3;
+  int32 duration = 4;
+  int32 project_id = 5;
+  string project_name = 6;
+  int32 activity_id = 7;
+  string activity_name = 8;
+  string description = 9;
+  repeated string tags = 10;
+  map<string, string> meta = 11;
+}
+
+message WeekData {
+  int32 year = 1;
+  int32 week = 2;
+  double total_minutes = 3;
+  double total_hours = 4;
+}
+
+message Settings {
+  map<string, string> prefs = 1;
+}
+
+message InferRequest {
+  string user_id = 1;
+  repeated TimesheetEntry timesheets = 2;
+  repeated WeekData weeks = 3;
+  Settings settings = 4;
+  map<string, string> options = 5;
+  string kind = 6;
+}
+
+message InferResponse {
+  string status = 1;
+  string result_json = 2;
+}
+
+service MlProcessor {
+  rpc Infer(InferRequest) returns (InferResponse);
+}

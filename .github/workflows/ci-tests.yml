@@ -1,0 +1,29 @@
+name: CI - Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./
+      - name: Generate Prisma client
+        run: npx prisma generate
+        working-directory: ./
+      - name: Run TypeScript build
+        run: npm run build
+        working-directory: ./
+      - name: Run unit tests
+        run: npm test --silent
+        working-directory: ./
