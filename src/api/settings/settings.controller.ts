@@ -4,6 +4,7 @@ import axios from 'axios';
 import { SyncService } from '../../queue/sync/sync.service';
 import { JwtAuthGuard } from '../../auth/jwt.guard';
 import { KimaiService } from '../../kimai/kimai.service';
+import * as dns from 'dns';
 
 class UpdateSettingsDto {
   kimai_api_url?: string;
@@ -17,6 +18,83 @@ class UpdateSettingsDto {
 @Controller('settings')
 export class SettingsController {
   constructor(private prisma: PrismaService, private sync: SyncService, private kimai: KimaiService) {}
+
+  private isPrivateIpAddress(ip: string): boolean {
+    // IPv6 loopback
+    if (ip === '::1') {
+      return true;
+    }
+
+    // IPv4 checks
+    const parts = ip.split('.').map(Number);
+    if (parts.length !== 4 || parts.some((p) => Number.isNaN(p) || p < 0 || p > 255)) {
+      return false;
+    }
+
+    const [a, b] = parts;
+
+    // 10.0.0.0/8
+    if (a === 10) {
+      return true;
+    }
+
+    // 172.16.0.0/12
+    if (a === 172 && b >= 16 && b <= 31) {
+      return true;
+    }
+
+    // 192.168.0.0/16
+    if (a === 192 && b === 168) {
+      return true;
+    }
+
+    // 127.0.0.0/8 (loopback)
+    if (a === 127) {
+      return true;
+    }
+
+    // 169.254.0.0/16 (link-local)
+    if (a === 169 && b === 254) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private async validateKimaiUrl(kimaiUrl: string): Promise<string> {
+    let parsed: URL;
+    try {
+      parsed = new URL(kimaiUrl);
+    } catch {
+      throw new UnauthorizedException('kimai_invalid_url');
+    }
+
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      throw new UnauthorizedException('kimai_invalid_url');
+    }
+
+    const hostname = parsed.hostname.toLowerCase();
+    if (hostname === 'localhost') {
+      throw new UnauthorizedException('kimai_invalid_host');
+    }
+
+    try {
+      const lookupResult = await dns.promises.lookup(hostname);
+      if (this.isPrivateIpAddress(lookupResult.address)) {
+        throw new UnauthorizedException('kimai_invalid_host');
+      }
+    } catch (err) {
+      // If DNS lookup fails for other reasons, treat as invalid host
+      if (err instanceof UnauthorizedException) {
+        throw err;
+      }
+      throw new UnauthorizedException('kimai_invalid_host');
+    }
+
+    // normalize by removing trailing slashes from origin + pathname
+    const base = (parsed.origin + parsed.pathname).replace(/\/+$/, '');
+    return base;
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get()
@@ -50,7 +128,8 @@ export class SettingsController {
     // validate credentials if provided
     if (kimaiUrl && kimaiKey) {
       try {
-        const url = kimaiUrl.replace(/\/+$/, '') + '/api/users/current';
+        const safeBaseUrl = await this.validateKimaiUrl(kimaiUrl);
+        const url = safeBaseUrl + '/api/users/current';
         await axios.get(url, { headers: { 'X-AUTH-API-TOKEN': kimaiKey } });
       } catch (e) {
         throw new UnauthorizedException('kimai_validation_failed');
