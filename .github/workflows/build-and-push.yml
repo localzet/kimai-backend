@@ -40,14 +40,3 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/kimai-backend:latest
             ghcr.io/${{ github.repository_owner }}/kimai-backend:${{ github.sha }}
           platforms: linux/amd64
-
-      - name: Build and push kimai-ml
-        uses: docker/build-push-action@v5
-        with:
-          context: ../kimai-ml
-          file: ../kimai-ml/Dockerfile
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/kimai-ml:latest
-            ghcr.io/${{ github.repository_owner }}/kimai-ml:${{ github.sha }}
-          platforms: linux/amd64
