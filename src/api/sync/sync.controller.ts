@@ -13,7 +13,7 @@ export class SyncController {
     const userId = req.user?.userId;
     if (!userId) throw new UnauthorizedException();
 
-    await this.prisma.syncState.upsert({ where: { userId }, update: { syncStatus: 'syncing' }, create: { userId, syncStatus: 'syncing' } });
+    await this.prisma.syncState.upsert({ where: { userId }, update: { status: 'syncing' }, create: { userId, status: 'syncing' } });
     await this.sync.startInitialSync({ userId });
     return { status: 'triggered', message: 'Sync started' };
   }
@@ -24,6 +24,6 @@ export class SyncController {
     const userId = req.user?.userId;
     if (!userId) throw new UnauthorizedException();
     const s = await this.prisma.syncState.findUnique({ where: { userId } });
-    return { status: s?.syncStatus ?? 'unknown' };
+    return { status: s?.status ?? 'unknown' };
   }
 }

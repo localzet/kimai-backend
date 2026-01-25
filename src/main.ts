@@ -15,6 +15,28 @@ async function bootstrap() {
   app.useGlobalPipes(new ZodValidationPipe());
 
   app.disable('x-powered-by');
+  // CORS: allow all in development, restrict by CORS_ORIGINS in production
+  const isDev = process.env.NODE_ENV !== 'production';
+  if (isDev) {
+    app.enableCors({ origin: true, credentials: true });
+  } else {
+    const raw = process.env.CORS_ORIGINS || '';
+    const allowedOrigins = raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    app.enableCors({
+      origin: (origin, callback) => {
+        // allow non-browser requests (e.g. curl, server-to-server)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error(`Origin ${origin} not allowed by CORS`));
+      },
+      credentials: true,
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+      allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
+    });
+  }
 
   app.enableShutdownHooks();
   app.enableVersioning({

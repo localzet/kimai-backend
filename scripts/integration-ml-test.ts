@@ -7,7 +7,7 @@ async function run() {
   const userId = `test-integration-${Date.now()}`;
 
   // create minimal user
-  await prisma.user.create({ data: { id: userId, mixId: `mix-${userId}` } }).catch(() => {});
+  await prisma.user.create({ data: { id: userId } }).catch(() => {});
 
   const ml = new MlService(prisma);
 

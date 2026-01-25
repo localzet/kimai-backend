@@ -5,16 +5,20 @@ import { AuthService } from './auth.service';
 export class JwtAuthGuard implements CanActivate {
   constructor(private readonly auth: AuthService) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
-    const auth = req.headers['authorization'] || req.headers['Authorization'];
-    if (!auth) throw new UnauthorizedException();
-    const parts = auth.split(' ');
+    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+    if (!authHeader) throw new UnauthorizedException('missing_authorization_header');
+    const parts = authHeader.split(' ');
     const token = parts.length === 2 ? parts[1] : parts[0];
-    const payload = this.auth.verifyToken(token);
-    if (!payload) throw new UnauthorizedException();
-    // attach to request
-    req.user = payload;
+    if (!token) throw new UnauthorizedException('missing_token');
+
+    const result = await this.auth.verifyAccessTokenAndGetUser(token);
+    if (!result) throw new UnauthorizedException('invalid_or_expired_token');
+
+    // attach user and token payload to request
+    req.user = result.user;
+    req.auth = result.payload;
     return true;
   }
 }

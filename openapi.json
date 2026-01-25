@@ -1,18 +1,21 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/api/v1/api/settings": {
+    "/api/v1/settings": {
       "get": {
-        "operationId": "SettingsController_getSettings",
+        "operationId": "SettingsController_getSettings_v1",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
-        }
+        },
+        "tags": [
+          "Settings"
+        ]
       },
       "put": {
-        "operationId": "SettingsController_updateSettings",
+        "operationId": "SettingsController_updateSettings_v1",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -28,54 +31,69 @@
           "200": {
             "description": ""
           }
-        }
+        },
+        "tags": [
+          "Settings"
+        ]
       }
     },
-    "/api/v1/api/sync/trigger": {
+    "/api/v1/sync/trigger": {
       "post": {
-        "operationId": "SyncController_trigger",
+        "operationId": "SyncController_trigger_v1",
         "parameters": [],
         "responses": {
           "201": {
             "description": ""
           }
-        }
+        },
+        "tags": [
+          "Sync"
+        ]
       }
     },
-    "/api/v1/api/sync/status": {
+    "/api/v1/sync/status": {
       "post": {
-        "operationId": "SyncController_status",
+        "operationId": "SyncController_status_v1",
         "parameters": [],
         "responses": {
           "201": {
             "description": ""
           }
-        }
+        },
+        "tags": [
+          "Sync"
+        ]
       }
     },
-    "/api/v1/api/timesheets": {
+    "/api/v1/timesheets": {
       "get": {
-        "operationId": "TimesheetsController_list",
+        "operationId": "TimesheetsController_list_v1",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
-        }
+        },
+        "tags": [
+          "Timesheets"
+        ]
       },
       "post": {
-        "operationId": "TimesheetsController_create",
+        "operationId": "TimesheetsController_create_v1",
         "parameters": [],
         "responses": {
           "201": {
             "description": ""
           }
-        }
+        },
+        "tags": [
+          "Timesheets"
+        ]
       }
     },
-    "/api/v1/api/timesheets/{id}": {
+    "/api/v1/timesheets/{id}": {
       "get": {
-        "operationId": "TimesheetsController_get",
+        "operationId": "TimesheetsController_get_v1",
         "parameters": [
           {
             "name": "id",
@@ -90,56 +108,71 @@
           "200": {
             "description": ""
           }
-        }
+        },
+        "tags": [
+          "Timesheets"
+        ]
       }
     },
-    "/api/v1/api/ml/configs": {
+    "/api/v1/ml/configs": {
       "get": {
-        "operationId": "MlController_listConfigs",
+        "operationId": "MlController_listConfigs_v1",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
-        }
+        },
+        "tags": [
+          "Ml"
+        ]
       }
     },
-    "/api/v1/api/ml/configs/{key}": {
+    "/api/v1/ml/configs/{key}": {
       "put": {
-        "operationId": "MlController_upsertConfig",
+        "operationId": "MlController_upsertConfig_v1",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
-        }
+        },
+        "tags": [
+          "Ml"
+        ]
       }
     },
-    "/api/v1/api/ml/infer": {
+    "/api/v1/ml/infer": {
       "post": {
-        "operationId": "MlController_infer",
+        "operationId": "MlController_infer_v1",
         "parameters": [],
         "responses": {
           "201": {
             "description": ""
           }
-        }
+        },
+        "tags": [
+          "Ml"
+        ]
       }
     },
-    "/api/v1/api/health": {
+    "/api/v1/health": {
       "get": {
-        "operationId": "HealthController_health",
+        "operationId": "HealthController_health_v1",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
-        }
+        },
+        "tags": [
+          "Health"
+        ]
       }
     },
-    "/api/v1/api/auth/register": {
+    "/api/v1/auth/register": {
       "post": {
-        "operationId": "AuthController_register",
+        "operationId": "AuthController_register_v1",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -152,15 +185,35 @@
           }
         },
         "responses": {
-          "201": {
-            "description": ""
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "success": true,
+                    "data": {
+                      "accessToken": "jwt...",
+                      "refreshToken": "refresh...",
+                      "user": {
+                        "id": "user-uuid",
+                        "email": "user@example.com"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
-        }
+        },
+        "tags": [
+          "auth"
+        ]
       }
     },
-    "/api/v1/api/auth/login": {
+    "/api/v1/auth/login": {
       "post": {
-        "operationId": "AuthController_login",
+        "operationId": "AuthController_login_v1",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -173,32 +226,99 @@
           }
         },
         "responses": {
-          "201": {
-            "description": ""
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "success": true,
+                    "data": {
+                      "accessToken": "jwt...",
+                      "refreshToken": "refresh...",
+                      "user": {
+                        "id": "user-uuid"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
-        }
+        },
+        "tags": [
+          "auth"
+        ]
       }
     },
-    "/api/v1/api/auth/refresh": {
+    "/api/v1/auth/refresh": {
       "post": {
-        "operationId": "AuthController_refresh",
+        "operationId": "AuthController_refresh_v1",
         "parameters": [],
-        "responses": {
-          "201": {
-            "description": ""
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshDto"
+              }
+            }
           }
-        }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "success": true,
+                    "data": {
+                      "accessToken": "jwt...",
+                      "refreshToken": "refresh..."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
       }
     },
-    "/api/v1/api/auth/logout": {
+    "/api/v1/auth/logout": {
       "post": {
-        "operationId": "AuthController_logout",
+        "operationId": "AuthController_logout_v1",
         "parameters": [],
-        "responses": {
-          "201": {
-            "description": ""
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoutDto"
+              }
+            }
           }
-        }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "success": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
       }
     }
   },
@@ -225,11 +345,59 @@
       },
       "RegisterDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "strongpassword",
+            "minLength": 6
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
       },
       "LoginDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "strongpassword"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "RefreshDto": {
+        "type": "object",
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "example": "eyJhbGciOi..."
+          }
+        },
+        "required": [
+          "refresh_token"
+        ]
+      },
+      "LogoutDto": {
+        "type": "object",
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "example": "eyJhbGciOi..."
+          }
+        }
       }
     }
   }

@@ -6,6 +6,7 @@ import { INITIAL_SYNC, QUEUE_NAME, REGULAR_SYNC } from './sync.constants';
 import { PrismaService } from '../../prisma/prisma.service';
 import { inferGrpc } from '../../api/ml/grpc-client';
 import { KimaiService } from '../../kimai/kimai.service';
+import { CalendarService } from '../../calendar/calendar.service';
 
 @Processor(QUEUE_NAME, {
     concurrency: 1,
@@ -13,7 +14,7 @@ import { KimaiService } from '../../kimai/kimai.service';
 export class SyncProcessor extends WorkerHost {
     private readonly logger = new Logger(SyncProcessor.name);
 
-    constructor(private readonly prisma: PrismaService, private readonly kimai: KimaiService) {
+    constructor(private readonly prisma: PrismaService, private readonly kimai: KimaiService, private readonly calendar: CalendarService) {
         super();
     }
 
@@ -46,10 +47,17 @@ export class SyncProcessor extends WorkerHost {
 
         await this.fetchAndStoreTimesheets(userId, since, until);
 
+        // Sync to external calendar if configured
+        try {
+            await this.calendar.syncUserCalendar(userId);
+        } catch (error) {
+            this.logger.error(`Calendar sync failed for user ${userId}:`, error);
+        }
+
         await this.prisma.syncState.upsert({
             where: { userId },
-            update: { syncStatus: 'synced' },
-            create: { userId, syncStatus: 'synced' },
+            update: { status: 'synced' },
+            create: { userId, status: 'synced' },
         });
         return { ok: true };
     }
@@ -66,10 +74,17 @@ export class SyncProcessor extends WorkerHost {
 
         await this.fetchAndStoreTimesheets(userId, since, until);
 
+        // Sync to external calendar if configured
+        try {
+            await this.calendar.syncUserCalendar(userId);
+        } catch (error) {
+            this.logger.error(`Calendar sync failed for user ${userId}:`, error);
+        }
+
         await this.prisma.syncState.upsert({
             where: { userId },
-            update: { syncStatus: 'synced' },
-            create: { userId, syncStatus: 'synced' },
+            update: { status: 'synced' },
+            create: { userId, status: 'synced' },
         });
         return { ok: true };
     }

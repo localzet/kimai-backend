@@ -167,7 +167,7 @@ export class SettingsController {
     }
 
     // enqueue initial sync
-    await this.prisma.syncState.upsert({ where: { userId }, update: { syncStatus: 'syncing' }, create: { userId, syncStatus: 'syncing' } });
+    await this.prisma.syncState.upsert({ where: { userId }, update: { status: 'syncing' }, create: { userId, status: 'syncing' } });
     await this.sync.startInitialSync({ userId });
 
     // fetch projects from Kimai to return to frontend for configuration

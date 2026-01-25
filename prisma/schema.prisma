@@ -23,6 +23,32 @@ model User {
   mlResults  MlResult[]
 }
 
+model SyncState {
+  id         String @id @default(uuid())
+  userId     String @unique
+  status String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  refreshToken String   @unique
+  expiresAt    DateTime
+  lastUsedAt   DateTime
+  ipAddress    String?
+  userAgent    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
 model UserSettings {
   id              String   @id @default(uuid())
   userId          String   @unique
@@ -33,17 +59,6 @@ model UserSettings {
   excludedTags    String[] @default([])
   calendarSync    Json?
   userPreferences Json?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id])
-}
-
-model SyncState {
-  id         String @id @default(uuid())
-  userId     String @unique
-  syncStatus String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -72,21 +87,6 @@ model Timesheet {
   user User @relation(fields: [userId], references: [id])
 
   @@unique([userId, kimaiId])
-}
-
-model Session {
-  id           String   @id @default(uuid())
-  userId       String
-  refreshToken String   @unique
-  expiresAt    DateTime
-  lastUsedAt   DateTime
-  ipAddress    String?
-  userAgent    String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id])
 }
 
 model MlConfig {

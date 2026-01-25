@@ -18,7 +18,7 @@ export class CronService {
     const until = now.toISOString();
     for (const s of users) {
       const userId = s.userId;
-      await this.prisma.syncState.upsert({ where: { userId }, update: { syncStatus: 'syncing' }, create: { userId, syncStatus: 'syncing' } });
+      await this.prisma.syncState.upsert({ where: { userId }, update: { status: 'syncing' }, create: { userId, status: 'syncing' } });
       await this.queueService.startRegularSync({ userId, since, until });
     }
   }
@@ -33,7 +33,7 @@ export class CronService {
     const until = now.toISOString();
     for (const s of users) {
       const userId = s.userId;
-      await this.prisma.syncState.upsert({ where: { userId }, update: { syncStatus: 'syncing' }, create: { userId, syncStatus: 'syncing' } });
+      await this.prisma.syncState.upsert({ where: { userId }, update: { status: 'syncing' }, create: { userId, status: 'syncing' } });
       await this.queueService.startRegularSync({ userId, since, until });
     }
   }

@@ -9,6 +9,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { CacheModule } from '@nestjs/cache-manager';
 import { createKeyv } from '@keyv/redis';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CalendarModule } from './calendar/calendar.module';
 import { getRedisConnectionOptions } from './utils/get-redis-connection-options';
 
 @Module({
@@ -50,7 +51,8 @@ import { getRedisConnectionOptions } from './utils/get-redis-connection-options'
     }),
 
     AuthModule,
-    ApiModule
+    ApiModule,
+    CalendarModule
   ],
   providers: [CronService]
 })
