@@ -22,14 +22,6 @@ services:
       interval: 5s
       retries: 5
 
-  kimai-ml:
-    build: ../kimai-ml
-    platform: linux/amd64
-    ports:
-      - "50051:50051"
-    depends_on:
-      - postgres
-
   migrator:
     build: .
     platform: linux/amd64
@@ -49,8 +41,6 @@ services:
       DATABASE_URL: postgres://kimai:pass@postgres:5432/kimai
       REDIS_URL: redis://redis:6379
       PORT: 3001
-      ML_GRPC_HOST: kimai-ml:50051
     depends_on:
       - postgres
       - redis
-      - kimai-ml
