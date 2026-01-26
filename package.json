@@ -8,11 +8,12 @@
     "start:prod": "node dist/main.js",
     "start:worker": "ts-node-dev --respawn --transpile-only src/worker.ts",
     "test:integration": "ts-node ./scripts/integration-ml-test.ts",
-    "build": "npm run openapi:export && tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node dist/scripts/export-openapi.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "test": "jest --runInBand",
     "openapi:export": "node -r ts-node/register src/scripts/export-openapi.ts",
+    "openapi:export:dist": "node dist/scripts/export-openapi.js",
     "e2e:up": "docker-compose -f docker-compose.test.yml up -d --build",
     "e2e:down": "docker-compose -f docker-compose.test.yml down",
     "test:e2e": "npm run e2e:up && jest --runInBand test/e2e.spec.ts && npm run e2e:down"
