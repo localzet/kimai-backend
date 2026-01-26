@@ -114,6 +114,34 @@
         ]
       }
     },
+    "/api/v1/dashboard/weeks": {
+      "get": {
+        "operationId": "DashboardController_getWeeks_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
+    "/api/v1/dashboard/metrics": {
+      "get": {
+        "operationId": "DashboardController_getMetrics_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
     "/api/v1/ml/configs": {
       "get": {
         "operationId": "MlController_listConfigs_v1",
