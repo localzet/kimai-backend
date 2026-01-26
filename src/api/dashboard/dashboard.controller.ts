@@ -60,7 +60,7 @@ export class DashboardController {
 
     for (const entry of timesheets) {
       // Filter by excluded tags
-      if (excludedTags.length > 0 && entry.tags?.some(tag => excludedTags.includes(tag.toLowerCase()))) {
+      if (excludedTags.length > 0 && entry.tags?.some((tag: string) => excludedTags.includes(tag.toLowerCase()))) {
         continue;
       }
 
