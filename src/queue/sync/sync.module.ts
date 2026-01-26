@@ -11,6 +11,7 @@ import { QUEUE_NAME } from './sync.constants';
 
 import { PrismaModule } from '../../prisma/prisma.module';
 import { KimaiModule } from '../../kimai/kimai.module';
+import { CalendarModule } from '../../calendar/calendar.module';
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { KimaiModule } from '../../kimai/kimai.module';
         BullBoardModule.forFeature({ name: QUEUE_NAME, adapter: BullMQAdapter }),
         PrismaModule,
         KimaiModule,
+        CalendarModule,
         // Analytics queue coexists alongside sync queue
         // (AnalyticsModule imported in QueueModule if needed)
     ],
