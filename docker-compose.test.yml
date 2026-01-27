@@ -36,11 +36,11 @@ services:
     build: .
     platform: linux/amd64
     ports:
-      - "3001:3001"
+      - "3000:3000"
     environment:
       DATABASE_URL: postgres://kimai:pass@postgres:5432/kimai
       REDIS_URL: redis://redis:6379
-      PORT: 3001
+      PORT: 3000
     depends_on:
       - postgres
       - redis

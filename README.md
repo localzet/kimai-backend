@@ -9,7 +9,7 @@ Quick start
 ```
 DATABASE_URL=postgresql://user:pass@localhost:5432/kimai
 REDIS_URL=redis://localhost:6379
-PORT=3001
+PORT=3000
 ```
 
 2. Install dependencies:

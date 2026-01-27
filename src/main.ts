@@ -9,7 +9,7 @@ import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
+  const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ZodValidationPipe());
@@ -51,7 +51,7 @@ async function bootstrap() {
     // .setTermsOfService('')
     // .setContact('localzet', 'https://github.com/localzet', 'creator@localzet.com')
     // .setLicense('AGPL-3.0', 'https://github.com/localzet/kimai-backend/?tab=AGPL-3.0-1-ov-file')
-    .addServer('http://localhost:3001', 'Development')
+    .addServer('http://localhost:3000', 'Development')
     .addServer('https://kimai-api.zorin.cloud', 'Production')
     // .setExternalDoc('GitHub', 'https://github.com/localzet/kimai-backend')
     .addBearerAuth(

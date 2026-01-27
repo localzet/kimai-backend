@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE = process.env.BASE_URL || 'http://localhost:3001';
+const BASE = process.env.BASE_URL || 'http://localhost:3000';
 
 describe('E2E smoke', () => {
   it('health endpoint returns ok', async () => {
