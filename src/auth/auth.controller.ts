@@ -45,6 +45,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ schema: { example: { success: true, data: { accessToken: 'jwt...', refreshToken: 'refresh...', user: { id: 'user-uuid' } } } } })
   async login(@Req() req: any, @Body() body: LoginDto) {
     const ip = req.ip || req.headers['x-forwarded-for'] || null;
