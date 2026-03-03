@@ -31,7 +31,7 @@
     "@nestjs/core": "^11.1.10",
     "@nestjs/cqrs": "^11.0.3",
     "@nestjs/event-emitter": "^3.0.1",
-    "@nestjs/platform-express": "^11.1.10",
+    "@nestjs/platform-express": "^11.1.15",
     "@nestjs/schedule": "^6.1.0",
     "@nestjs/swagger": "^11.2.3",
     "@notionhq/client": "^5.8.0",
